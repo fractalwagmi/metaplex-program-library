@@ -213,6 +213,7 @@ programCommand('sell')
   .option('-b, --buy-price <string>', 'Price you wish to sell for')
   .option('-m, --mint <string>', 'Mint of the token to purchase')
   .option('-t, --token-size <string>', 'Amount of tokens you want to sell')
+  .option('-ts, --token-standard <string>', 'TokenStandard: NonFungible or ProgrammableNonFungible')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   .action(async (directory, cmd) => {
     const {
@@ -224,8 +225,14 @@ programCommand('sell')
       mint,
       tokenSize,
       auctionHouseSigns,
+      tokenStandard,
     } = cmd.opts();
 
+    if (tokenStandard != "NonFungible" && tokenStandard != "ProgrammableNonFungible") {
+      throw Error(
+        'Token Type have to be either NonFungible or ProgrammableNonFungible',
+      );
+    }
     const auctionHouseKey = new web3.PublicKey(auctionHouse);
     const walletKeyPair = loadWalletKey(keypair);
 
@@ -306,46 +313,49 @@ programCommand('sell')
     const edition = await getMasterEdition(mintKey);
 
     const remainingAccounts: AccountMeta[] = [];
-    remainingAccounts.push({
-      pubkey: TOKEN_METADATA_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: delegateRecord,
-      isWritable: true,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: tokenRecord,
-      isWritable: true,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: mintKey,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: edition,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: METAPLEX_RULE_SET_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-      isWritable: false,
-      isSigner: false,
-    });
+
+    if (tokenStandard == "ProgrammableNonFungible") {
+      remainingAccounts.push({
+        pubkey: TOKEN_METADATA_PROGRAM_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: delegateRecord,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: tokenRecord,
+          isWritable: true,
+          isSigner: false,
+        });
+        remainingAccounts.push({
+          pubkey: mintKey,
+          isWritable: false,
+          isSigner: false,
+        });
+        remainingAccounts.push({
+          pubkey: edition,
+          isWritable: false,
+          isSigner: false,
+        });
+        remainingAccounts.push({
+          pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
+          isWritable: false,
+          isSigner: false,
+        });
+        remainingAccounts.push({
+          pubkey: METAPLEX_RULE_SET_ID,
+          isWritable: false,
+          isSigner: false,
+        });
+        remainingAccounts.push({
+          pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+          isWritable: false,
+          isSigner: false,
+        });
+      }
 
     const instruction = await anchorProgram.instruction.sell(
       tradeBump,
@@ -403,8 +413,6 @@ programCommand('sell')
       signers,
       'max',
     );
-    
-
     log.info(
       'Set',
       tokenSize,
@@ -594,6 +602,7 @@ programCommand('cancel')
   .option('-b, --buy-price <string>', 'Price you wish to sell for')
   .option('-m, --mint <string>', 'Mint of the token to purchase')
   .option('-t, --token-size <string>', 'Amount of tokens you want to sell')
+  .option('-ts, --token-standard <string>', 'TokenStandard: NonFungible or ProgrammableNonFungible')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   .action(async (directory, cmd) => {
     const {
@@ -605,8 +614,13 @@ programCommand('cancel')
       mint,
       tokenSize,
       auctionHouseSigns,
+      tokenStandard,
     } = cmd.opts();
-
+    if (tokenStandard != "NonFungible" && tokenStandard != "ProgrammableNonFungible") {
+      throw Error(
+        'Token Type have to be either NonFungible or ProgrammableNonFungible',
+      );
+    }
     const auctionHouseKey = new web3.PublicKey(auctionHouse);
     const walletKeyPair = loadWalletKey(keypair);
 
@@ -690,62 +704,64 @@ programCommand('cancel')
     const edition = await getMasterEdition(mintKey);
 
     const remainingAccounts: AccountMeta[] = [];
-    remainingAccounts.push({
-      pubkey: TOKEN_METADATA_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: delegateRecord,
-      isWritable: true,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: programAsSigner,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: metaData,
-      isWritable: true,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: edition,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: tokenRecord,
-      isWritable: true,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: mintKey,
-      isWritable: false,
-      isSigner: false,
-    });
+    if (tokenStandard == "ProgrammableNonFungible") { 
+      remainingAccounts.push({
+        pubkey: TOKEN_METADATA_PROGRAM_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: delegateRecord,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: programAsSigner,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: metaData,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: edition,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: tokenRecord,
+        isWritable: true,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: mintKey,
+        isWritable: false,
+        isSigner: false,
+      });
 
-    remainingAccounts.push({
-      pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: METAPLEX_RULE_SET_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: SystemProgram.programId,
-      isWritable: false,
-      isSigner: false,
-    });
+      remainingAccounts.push({
+        pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: METAPLEX_RULE_SET_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: SystemProgram.programId,
+        isWritable: false,
+        isSigner: false,
+      });
+    }
     const instruction = await anchorProgram.instruction.cancel(
       buyPriceAdjusted,
       tokenSizeAdjusted,
@@ -815,6 +831,7 @@ programCommand('execute_sale')
   .option('-t, --token-size <string>', 'Amount of tokens you want to sell')
   .option('-bw, --buyer-wallet <string>', 'Buyer wallet')
   .option('-sw, --seller-wallet <string>', 'Seller wallet')
+  .option('-ts, --token-standard <string>', 'TokenStandard: NonFungible or ProgrammableNonFungible')
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   .action(async (directory, cmd) => {
     const {
@@ -828,8 +845,13 @@ programCommand('execute_sale')
       auctionHouseSigns,
       buyerWallet,
       sellerWallet,
+      tokenStandard,
     } = cmd.opts();
-
+    if (tokenStandard != "NonFungible" && tokenStandard != "ProgrammableNonFungible") {
+      throw Error(
+        'Token Type have to be either NonFungible or ProgrammableNonFungible',
+      );
+    }
     const auctionHouseKey = new web3.PublicKey(auctionHouse);
     const walletKeyPair = loadWalletKey(keypair);
 
@@ -946,58 +968,59 @@ programCommand('execute_sale')
         });
       }
     }
-    const edition = await getMasterEdition(mintKey);
-    remainingAccounts.push({
-      pubkey: TOKEN_METADATA_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: edition,
-      isWritable: false,
-      isSigner: false,
-    });
+    if (tokenStandard == "ProgrammableNonFungible") {
+      const edition = await getMasterEdition(mintKey);
+      remainingAccounts.push({
+        pubkey: TOKEN_METADATA_PROGRAM_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: edition,
+        isWritable: false,
+        isSigner: false,
+      });
 
-    const ownerTokenAccountKey = (
-      await getAtaForMint(mintKey, sellerWalletKey)
-    )[0];
-    const ownerTokenRecord = (
-      await getTokenRecord(mintKey, ownerTokenAccountKey)
-    )[0];
-    remainingAccounts.push({
-      pubkey: ownerTokenRecord,
-      isWritable: true,
-      isSigner: false,
-    });
+      const ownerTokenAccountKey = (
+        await getAtaForMint(mintKey, sellerWalletKey)
+      )[0];
+      const ownerTokenRecord = (
+        await getTokenRecord(mintKey, ownerTokenAccountKey)
+      )[0];
+      remainingAccounts.push({
+        pubkey: ownerTokenRecord,
+        isWritable: true,
+        isSigner: false,
+      });
 
-    const destinationTokenAccountKey = (
-      await getAtaForMint(mintKey, buyerWalletKey)
-    )[0];
-    const destinationTokenRecord = (
-      await getTokenRecord(mintKey, destinationTokenAccountKey)
-    )[0];
-    remainingAccounts.push({
-      pubkey: destinationTokenRecord,
-      isWritable: true,
-      isSigner: false,
-    });
+      const destinationTokenAccountKey = (
+        await getAtaForMint(mintKey, buyerWalletKey)
+      )[0];
+      const destinationTokenRecord = (
+        await getTokenRecord(mintKey, destinationTokenAccountKey)
+      )[0];
+      remainingAccounts.push({
+        pubkey: destinationTokenRecord,
+        isWritable: true,
+        isSigner: false,
+      });
 
-    remainingAccounts.push({
-      pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: METAPLEX_RULE_SET_ID,
-      isWritable: false,
-      isSigner: false,
-    });
-    remainingAccounts.push({
-      pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
-      isWritable: false,
-      isSigner: false,
-    });
-
+      remainingAccounts.push({
+        pubkey: TOKEN_AUTH_RULES_PROGRAM_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: METAPLEX_RULE_SET_ID,
+        isWritable: false,
+        isSigner: false,
+      });
+      remainingAccounts.push({
+        pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
+        isWritable: false,
+        isSigner: false,
+      });
+  }
     //
     const signers = [];
     //@ts-ignore
